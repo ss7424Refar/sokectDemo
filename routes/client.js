@@ -19,33 +19,47 @@ function socketClient() {
         console.log('from server =>' + data);
 
         if ('noTask' == data || 'inUse' == data) {
-            client.end();
+            // client.end();
+            client.write('getTask');
         }
         else if (0 == data.indexOf("job")) {
 
-            // 更新test_pc_session(略)
+            // 更新test_pc_session(使用中)
             let sql = 'update ats_test_pc_session set flag = 1 where lan_ip = ?';
             db.excute(sql, [host], function(err, result){
                 if(err){
                     console.log('[db flag error]-' + err);
                 } else {
-                    console.log('[db pc_session updated]');
+                    console.log('[db pc_session updated flag = 1]');
                 }
 
             });
 
             // 执行脚本
-            var data = data.split('=');
-
-            var steps = data[1];
-
-            steps = JSON.parse(steps);
+            var data = data.split('='); var steps = data[1]; steps = JSON.parse(steps);
 
             if ('JumpStart' == steps.Tool_Type){
 
                 console.log('running => JumpStart');
 
                 console.log('done');
+
+                // 根据taskId和steps更新 result
+                // 。。。
+
+                // 更新test_pc_session(未使用)
+                let sql = 'update ats_test_pc_session set flag = 0 where lan_ip = ?';
+                db.excute(sql, [host], function(err, result){
+                    if(err){
+                        console.log('[db flag error]-' + err);
+                    } else {
+                        console.log('[db pc_session updated flag = 0]');
+                    }
+
+                });
+
+                client.write('getTask');
+
             }
         }
 
@@ -65,5 +79,5 @@ function socketClient() {
     });
 }
 
-module.exports=socketClient;
-// socketClient();
+// module.exports=socketClient;
+socketClient();
